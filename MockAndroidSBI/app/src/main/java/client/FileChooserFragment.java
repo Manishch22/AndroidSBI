@@ -1,18 +1,19 @@
 package client;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -25,11 +26,52 @@ import io.mosip.mock.sbi.utility.FileUtils;
 
 public class FileChooserFragment extends Fragment {
     public static final String ARG_LAST_UPLOAD_DATE = "lastUploadDate";
-    private static final int MY_REQUEST_CODE_PERMISSION = 1000;
-    private static final int MY_RESULT_CODE_FILE_CHOOSER = 2000;
+    private static final String TAG = "FileChooserFragment";
 
     private TextView editTextPath;
-    Uri selectedFileUri;
+    private Uri selectedFileUri;
+
+    private ActivityResultLauncher<String> requestPermissionLauncher;
+    private ActivityResultLauncher<String> pickFileLauncher;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Permission launcher - handles runtime permission for READ_EXTERNAL_STORAGE or READ_MEDIA_*
+        requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    Log.d(TAG, "Permission result: " + isGranted);
+                    if (isGranted) {
+                        doBrowseFile();
+                    } else {
+                        Log.d(TAG, "Permission denied");
+                        Toast.makeText(getContext(), "Permission denied. Cannot access files.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
+        // File picker launcher - uses Storage Access Framework (modern approach)
+        pickFileLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    Log.d(TAG, "Picker returned uri: " + uri);
+                    if (uri != null) {
+                        selectedFileUri = uri;
+                        try {
+                            Pair<String, String> fileNameAndSize = FileUtils.getFileNameAndSize(getContext(), selectedFileUri);
+                            if (editTextPath != null) {
+                                editTextPath.setText(String.format("%s (%s)", fileNameAndSize.first, fileNameAndSize.second));
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error reading file name/size", e);
+                            Toast.makeText(getContext(), "Error reading file info", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+        );
+    }
 
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
@@ -41,70 +83,40 @@ public class FileChooserFragment extends Fragment {
         editTextPath.setText(lastUploadedDate);
 
         Button buttonBrowse = rootView.findViewById(R.id.button_browse);
-        buttonBrowse.setOnClickListener(view -> askPermissionAndBrowseFile());
+        buttonBrowse.setOnClickListener(view -> {
+            Log.d(TAG, "Browse button clicked");
+            askPermissionAndBrowseFile();
+        });
+
+        Log.d(TAG, "onCreateView completed");
         return rootView;
     }
 
     private void askPermissionAndBrowseFile() {
-        // Check if we have Call permission
-        int permission = ActivityCompat.checkSelfPermission(this.getContext(),
-                Manifest.permission.READ_EXTERNAL_STORAGE);
+        Log.d(TAG, "askPermissionAndBrowseFile called");
 
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // If don't have permission so prompt the user.
-            this.requestPermissions(
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    MY_REQUEST_CODE_PERMISSION
-            );
-            return;
+        // Determine which permission to request based on Android version
+        String permissionToRequest = Manifest.permission.READ_EXTERNAL_STORAGE;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+ requires READ_MEDIA_* instead of READ_EXTERNAL_STORAGE
+            permissionToRequest = Manifest.permission.READ_MEDIA_IMAGES;
         }
-        this.doBrowseFile();
+
+        int permission = ActivityCompat.checkSelfPermission(requireContext(), permissionToRequest);
+
+        if (permission != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Permission not granted. Requesting: " + permissionToRequest);
+            requestPermissionLauncher.launch(permissionToRequest);
+        } else {
+            Log.d(TAG, "Permission already granted, opening file picker");
+            doBrowseFile();
+        }
     }
 
     private void doBrowseFile() {
-        Intent chooseFileIntent = new Intent(Intent.ACTION_GET_CONTENT);
-        chooseFileIntent.setType("*/*");
-        // Only return URIs that can be opened with ContentResolver
-        chooseFileIntent.addCategory(Intent.CATEGORY_OPENABLE);
-
-        chooseFileIntent = Intent.createChooser(chooseFileIntent, "Choose a file");
-        startActivityForResult(chooseFileIntent, MY_RESULT_CODE_FILE_CHOOSER);
-    }
-
-    // When you have the request results
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        switch (requestCode) {
-            case MY_REQUEST_CODE_PERMISSION: {
-                // Note: If request is cancelled, the result arrays are empty.
-                // Permissions granted (CALL_PHONE).
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    this.doBrowseFile();
-                }
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case MY_RESULT_CODE_FILE_CHOOSER:
-                if (resultCode == Activity.RESULT_OK) {
-                    if (data != null) {
-                        selectedFileUri = data.getData();
-                        Pair<String, String> fileNameAndSize = FileUtils.getFileNameAndSize(getContext(), selectedFileUri);
-                        editTextPath.setText(String.format("%s (%s)", fileNameAndSize.first, fileNameAndSize.second));
-                    }
-                }
-                break;
-        }
-        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "doBrowseFile called - launching file picker");
+        // GetContent uses Storage Access Framework (SAF), no extra permissions needed
+        pickFileLauncher.launch("*/*");
     }
 
     public Uri getSelectedUri() {

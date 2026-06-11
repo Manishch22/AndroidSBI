@@ -20,6 +20,7 @@ import java.util.Map;
 import io.mosip.mock.sbi.R;
 import io.mosip.mock.sbi.constants.ClientConstants;
 import io.mosip.mock.sbi.faceCaptureApi.CaptureResult;
+import io.mosip.mock.sbi.sdk.T5Capture;
 import io.mosip.mock.sbi.utility.DeviceConstants;
 
 /**
@@ -83,6 +84,7 @@ public class CaptureActivity extends AppCompatActivity {
             try {
                 int qualityScore = 30;
                 Map<String, Uri> uris;
+                T5Capture capture = new T5Capture(this);
                 switch (modality.toLowerCase()) {
                     case "face":
                         ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.face);
@@ -90,7 +92,8 @@ public class CaptureActivity extends AppCompatActivity {
                         qualityScore = faceQualityScore;
                         break;
                     case "finger":
-                        ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.left);
+//                        ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.left);
+                        capture.capture(this, null);
                         uris = bioDevice.captureFingersModality(deviceSubId, bioSubType, exception);
                         qualityScore = fingerQualityScore;
                         break;
