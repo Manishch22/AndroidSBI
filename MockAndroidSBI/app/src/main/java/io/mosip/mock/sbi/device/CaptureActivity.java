@@ -2,16 +2,25 @@ package io.mosip.mock.sbi.device;
 
 import static io.mosip.mock.sbi.utility.DeviceConstants.*;
 
+import ai.tech5.finger.utils.FingerCaptureResult;
+import ai.tech5.finger.utils.T5FingerCapturedListener;
+import ai.tech5.sdk.abis.T5AirSnap.T5AirSnap;
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.widget.ImageView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,29 +30,44 @@ import io.mosip.mock.sbi.R;
 import io.mosip.mock.sbi.constants.ClientConstants;
 import io.mosip.mock.sbi.faceCaptureApi.CaptureResult;
 import io.mosip.mock.sbi.sdk.T5Capture;
+import io.mosip.mock.sbi.sdk.T5FaceCapture;
 import io.mosip.mock.sbi.utility.DeviceConstants;
 
 /**
  * @author NPrime Technologies
- *
  */
 
-public class CaptureActivity extends AppCompatActivity {
+public class CaptureActivity extends AppCompatActivity implements T5FingerCapturedListener {
+    private static final int CAMERA_PERMISSION_CODE = 100;
+    private static final String[] APP_PERMISSIONS = {Manifest.permission.CAMERA};
+
     private int faceQualityScore;
     private int fingerQualityScore;
     private int irisQualityScore;
     private BioDevice bioDevice;
 
+    // Store these for use in callbacks
+    private int deviceSubId;
+    private String[] bioSubType;
+    private String[] exception;
+    private String modality;
+    private long responseDelay;
+    private int captureTimeout;
+
+//    private T5AirSnap m_cellSdk;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_rcapture);
+//        setContentView(R.layout.activity_rcapture);
 
-        String modality = getIntent().getStringExtra("modality");
-        int deviceSubId = getIntent().getIntExtra("deviceSubId", 1);
-        int captureTimeout = getIntent().getIntExtra("CaptureTimeout", Integer.MAX_VALUE);
-        String[] bioSubType = getIntent().getStringArrayExtra("bioSubType");
-        String[] exception = getIntent().getStringArrayExtra("exception");
+//        m_cellSdk = new T5AirSnap(this);
+
+        modality = getIntent().getStringExtra("modality");
+        deviceSubId = getIntent().getIntExtra("deviceSubId", 1);
+        captureTimeout = getIntent().getIntExtra("CaptureTimeout", Integer.MAX_VALUE);
+        bioSubType = getIntent().getStringArrayExtra("bioSubType");
+        exception = getIntent().getStringArrayExtra("exception");
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         faceQualityScore = sharedPreferences.getInt(ClientConstants.FACE_SCORE, 30);
@@ -58,7 +82,6 @@ public class CaptureActivity extends AppCompatActivity {
             bioDevice = new RegBioDevice(this);
         }
 
-        long responseDelay;
         switch (modality.toLowerCase()) {
             case "face":
                 responseDelay = sharedPreferences.getInt(ClientConstants.FACE_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
@@ -80,33 +103,74 @@ public class CaptureActivity extends AppCompatActivity {
             return;
         }
 
+        // Request camera permission if needed
+        if ("finger".equalsIgnoreCase(modality) || "face".equalsIgnoreCase(modality)) {
+            if (hasAllPermissionsGranted()) {
+                startCapture();
+            } else {
+                requestPermissionLauncher.launch(APP_PERMISSIONS);
+            }
+        }
+    }
+
+    private boolean hasAllPermissionsGranted() {
+        for (String permission : APP_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private final ActivityResultLauncher<String[]> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                boolean isAllPermissionsGranted = true;
+
+                for (Boolean isGranted : result.values()) {
+                    if (Boolean.FALSE.equals(isGranted)) {
+                        isAllPermissionsGranted = false;
+                        break;
+                    }
+                }
+
+                if (isAllPermissionsGranted) {
+                    startCapture();
+                }
+            });
+
+    private void startCapture() {
         new Handler().postDelayed(() -> {
             try {
                 int qualityScore = 30;
                 Map<String, Uri> uris;
-                T5Capture capture = new T5Capture(this);
+
                 switch (modality.toLowerCase()) {
                     case "face":
-                        ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.face);
-                        uris = bioDevice.captureFaceModality();
-                        qualityScore = faceQualityScore;
+//                        ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.face);
+//                        uris = bioDevice.captureFaceModality();
+//                        qualityScore = faceQualityScore;
+//                        captureSuccessful(uris, qualityScore);
+                        T5FaceCapture faceCapture = new T5FaceCapture(this);
+                        faceCapture.startFaceCapture(this);
                         break;
                     case "finger":
 //                        ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.left);
-                        capture.capture(this, null);
-                        uris = bioDevice.captureFingersModality(deviceSubId, bioSubType, exception);
-                        qualityScore = fingerQualityScore;
+                        // Pass 'this' as the listener - callbacks will be received in onSuccess/onFailure
+                        T5Capture capture = new T5Capture(this);
+                        capture.capture(this, this, null);
+                        // The flow will continue in the callback methods below
                         break;
                     case "iris":
                         ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.iris);
                         uris = bioDevice.captureIrisModality(deviceSubId, bioSubType, exception);
                         qualityScore = irisQualityScore;
+                        captureSuccessful(uris, qualityScore);
                         break;
                     default:
                         uris = new HashMap<>();
+                        captureSuccessful(uris, 0);
                         break;
                 }
-                captureSuccessful(uris, qualityScore);
             } catch (Exception e) {
                 e.printStackTrace();
                 captureFailed(-301, e.getMessage());
@@ -114,13 +178,41 @@ public class CaptureActivity extends AppCompatActivity {
         }, responseDelay);
     }
 
+    @Override
+    public void onSuccess(FingerCaptureResult result) {
+        // T5 SDK capture was successful, now get the fingerprint data
+        try {
+            Map<String, Uri> uris = bioDevice.captureFingersModality(deviceSubId, bioSubType, exception);
+            captureSuccessful(uris, fingerQualityScore);
+        } catch (Exception e) {
+            captureFailed(-301, e.getMessage());
+        }
+    }
+
+    @Override
+    public void onFailure(String errorMessage) {
+        captureFailed(-301, errorMessage);
+    }
+
+    @Override
+    public void onTimedout() {
+        captureFailed(-301, "Capture timeout");
+    }
+
+    @Override
+    public void onCancelled() {
+        captureFailed(-301, "Capture cancelled by user");
+    }
+
     public void captureSuccessful(Map<String, Uri> uris, int quality) {
         Intent intent = new Intent();
         ArrayList<String> segmentNames = new ArrayList<>();
 
-        for (String attribute : uris.keySet()) {
-            segmentNames.add(attribute);
-            intent.putExtra(attribute, uris.get(attribute));
+        if (uris != null) {
+            for (String attribute : uris.keySet()) {
+                segmentNames.add(attribute);
+                intent.putExtra(attribute, uris.get(attribute));
+            }
         }
 
         intent.putExtra("segmentNames", segmentNames);

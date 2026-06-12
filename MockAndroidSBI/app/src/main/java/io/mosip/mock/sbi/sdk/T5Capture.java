@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.concurrent.ExecutorService;
 
-public class T5Capture implements T5FingerCapturedListener {
+public class T5Capture {
 
     SettingsPrefManager settingsPrefManager;
 
@@ -26,36 +26,10 @@ public class T5Capture implements T5FingerCapturedListener {
         m_lightSensorHelper.start();
     }
 
-    private static void writeToFile(byte[] data, String path) {
-        try {
-
-            Log.d("TAG", "saving to " + path);
-            File myFile = new File(path);
-
-            File parentDir = myFile.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                parentDir.mkdirs();
-            }
-
-            if (myFile.exists()) {
-                myFile.delete();
-            }
-
-            myFile.createNewFile();
-            FileOutputStream fOut = new FileOutputStream(myFile);
-            fOut.write(data);
-            fOut.flush();
-            fOut.close();
-
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void capture(Context context, ArrayList<Integer> missingfingerId) {
+    public void capture(Context context, T5FingerCapturedListener listener, ArrayList<Integer> missingfingerId) {
         T5FingerCaptureController t5FingerCaptureController = T5FingerCaptureController.getInstance();
+        settingsPrefManager = new SettingsPrefManager(context);
+        t5FingerCaptureController.setsavesdklogs(true);
         t5FingerCaptureController.setZoomFactor(settingsPrefManager.getZoomRatio());
         t5FingerCaptureController.setLicense("");
 
@@ -69,35 +43,6 @@ public class T5Capture implements T5FingerCapturedListener {
         t5FingerCaptureController.setDetectorThreshold(0.9f);
         t5FingerCaptureController.setUsername("SBI");
         LinkedHashSet<SegmentationMode> segmentationModeSet = new LinkedHashSet<>();
-
-//        if (binding.chkBoxLeftSlap.isChecked()) {
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
-//        } else if (binding.chkBoxRightSlap.isChecked()) {
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
-//        } else if (binding.chkBoxLeftThumb.isChecked()) {
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_THUMB);
-//        } else if (binding.chkBoxRightThumb.isChecked()) {
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_THUMB);
-//        } else if (binding.chkBoxLeftIndex.isChecked()) {
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_INDEX);
-//        } else if (binding.chkBoxRightIndex.isChecked()) {
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_INDEX);
-//        } else if (binding.chkBoxLeftIndexMiddle.isChecked()) {
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_INDEX_MIDDLE);
-//        } else if (binding.chkBoxRightIndexMiddle.isChecked()) {
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_INDEX_MIDDLE);
-//        } else if (binding.chkBoxThumbs.isChecked()) {
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_AND_RIGHT_THUMBS);
-//        } else if (binding.chkBox442.isChecked()) {
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_AND_RIGHT_THUMBS);
-//        } else if (binding.chkBox4411.isChecked()) {
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_THUMB);
-//            segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_THUMB);
-//        }
 
         segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
 
@@ -171,16 +116,13 @@ public class T5Capture implements T5FingerCapturedListener {
 
         t5FingerCaptureController.setTimeoutInSecs(60);
 
-        t5FingerCaptureController.setsavesdklogs(settingsPrefManager.isSaveSdkLogEnabled());
+//        t5FingerCaptureController.setsavesdklogs(settingsPrefManager.isSaveSdkLogEnabled());
 //        t5FingerCaptureController.setSavefingerprints(settingsPrefManager.isSaveFingerprintsEnabled());
 
         t5FingerCaptureController.setSavefingerprints(true);
         t5FingerCaptureController.setReversefingerprints(settingsPrefManager.isGetFingerReverseEnabled());
 
-
-        t5FingerCaptureController.captureFingers(context, this);
-
-
+        t5FingerCaptureController.captureFingers(context, listener);
     }
 
     private @NonNull ImageConfiguration getImageConfiguration() {
@@ -200,40 +142,40 @@ public class T5Capture implements T5FingerCapturedListener {
         return segmentedFingersConfiguration;
     }
 
-    @Override
-    public void onSuccess(FingerCaptureResult result) {
-//        if (settingsPrefManager.isGetFingerReverseEnabled() && result.reversefingerScores != SE_OK) {
-//            Toast.makeText(MainActivity.this, "Something went wrong. Try again!", Toast.LENGTH_LONG).show();
-//            return;
-//        }
-//        Result captureResult = new Result();
-//        captureResult.livenessScores = result.livenessScores;
+//    @Override
+//    public void onSuccess(FingerCaptureResult result) {
+////        if (settingsPrefManager.isGetFingerReverseEnabled() && result.reversefingerScores != SE_OK) {
+////            Toast.makeText(MainActivity.this, "Something went wrong. Try again!", Toast.LENGTH_LONG).show();
+////            return;
+////        }
+////        Result captureResult = new Result();
+////        captureResult.livenessScores = result.livenessScores;
+////
+////        m_rootDirectory = Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + File.separator + System.currentTimeMillis();
+////        if (result.fingers != null && !result.fingers.isEmpty()) {
+////            captureResult.fingers = saveFingerImages(result.fingers);
+////        }
+////
+////        Intent intent = new Intent(MainActivity.this, ResultScreen.class);
+////        intent.putExtra("result", captureResult);
+////        startActivity(intent);
+//    }
 //
-//        m_rootDirectory = Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + File.separator + System.currentTimeMillis();
-//        if (result.fingers != null && !result.fingers.isEmpty()) {
-//            captureResult.fingers = saveFingerImages(result.fingers);
-//        }
+//    @Override
+//    public void onTimedout() {
+////        Toast.makeText(T5CaptureActivity.this, "capture timedout ", Toast.LENGTH_LONG).show();
+//    }
 //
-//        Intent intent = new Intent(MainActivity.this, ResultScreen.class);
-//        intent.putExtra("result", captureResult);
-//        startActivity(intent);
-    }
-
-    @Override
-    public void onTimedout() {
-//        Toast.makeText(T5CaptureActivity.this, "capture timedout ", Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onFailure(String errorMessage) {
-//        Toast.makeText(T5CaptureActivity.this, "error " + errorMessage, Toast.LENGTH_LONG).show();
-        Log.e("TAG", errorMessage);
-    }
-
-    @Override
-    public void onCancelled() {
-//        Toast.makeText(T5CaptureActivity.this, "User cancelled ", Toast.LENGTH_LONG).show();
-    }
+//    @Override
+//    public void onFailure(String errorMessage) {
+////        Toast.makeText(T5CaptureActivity.this, "error " + errorMessage, Toast.LENGTH_LONG).show();
+//        Log.e("TAG", errorMessage);
+//    }
+//
+//    @Override
+//    public void onCancelled() {
+////        Toast.makeText(T5CaptureActivity.this, "User cancelled ", Toast.LENGTH_LONG).show();
+//    }
 
 //    private ArrayList<FingerData> saveFingerImages(ArrayList<Finger> fingers) {
 //        ArrayList<FingerData> list = new ArrayList<>();

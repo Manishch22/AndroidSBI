@@ -138,14 +138,14 @@ public class MDServiceActivity extends AppCompatActivity {
                     if (null != discoverRequestDto) {
                         switch (discoverRequestDto.type) {
                             case "Face":
-                                responseBody = discoverDevice(currentFaceStatus, szTs, "io.mosip.mock.sbi.face", DeviceConstants.BioType.Face);
+                                responseBody = discoverDevice(currentFaceStatus, szTs, "io.mosip.t5mock.sbi.face", DeviceConstants.BioType.Face);
                                 break;
                             case "Finger":
-                                responseBody = discoverDevice(currentFingerStatus, szTs, "io.mosip.mock.sbi.finger",
+                                responseBody = discoverDevice(currentFingerStatus, szTs, "io.mosip.t5mock.sbi.finger",
                                         DeviceConstants.BioType.Finger);
                                 break;
                             case "Iris":
-                                responseBody = discoverDevice(currentIrisStatus, szTs, "io.mosip.mock.sbi.iris",
+                                responseBody = discoverDevice(currentIrisStatus, szTs, "io.mosip.t5mock.sbi.iris",
                                         DeviceConstants.BioType.Iris);
                                 break;
                             case "Biometric Device":
@@ -163,7 +163,7 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.mosip.mock.sbi.face.Info": {
+            case "io.mosip.t5mock.sbi.face.Info": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
@@ -175,11 +175,11 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.mosip.mock.sbi.finger.Info": {
+            case "io.mosip.t5mock.sbi.finger.Info": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
-                    String requestType = "io.mosip.mock.sbi.finger" + ".info";
+                    String requestType = "io.mosip.t5mock.sbi.finger" + ".info";
                     List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentFingerStatus, szTs, requestType, DeviceConstants.BioType.Finger);
 
                     generateResponse(deviceInfo, false);
@@ -187,11 +187,11 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.mosip.mock.sbi.iris.Info": {
+            case "io.mosip.t5mock.sbi.iris.Info": {
                 new Thread(() -> {
                     String szTs = new CommonDeviceAPI().getISOTimeStamp();
 
-                    String requestType = "io.mosip.mock.sbi.iris" + ".info";
+                    String requestType = "io.mosip.t5mock.sbi.iris" + ".info";
                     List<DeviceInfoResponse> deviceInfo = getDeviceDriverInfo(currentIrisStatus, szTs, requestType, DeviceConstants.BioType.Iris);
 
                     generateResponse(deviceInfo, false);
@@ -199,8 +199,8 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.mosip.mock.sbi.face.rCapture":
-            case "io.mosip.mock.sbi.face.Capture": {
+            case "io.mosip.t5mock.sbi.face.rCapture":
+            case "io.mosip.t5mock.sbi.face.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
@@ -212,8 +212,8 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.mosip.mock.sbi.finger.rCapture":
-            case "io.mosip.mock.sbi.finger.Capture": {
+            case "io.mosip.t5mock.sbi.finger.rCapture":
+            case "io.mosip.t5mock.sbi.finger.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
@@ -225,8 +225,8 @@ public class MDServiceActivity extends AppCompatActivity {
                 }).start();
                 break;
             }
-            case "io.mosip.mock.sbi.iris.rCapture":
-            case "io.mosip.mock.sbi.iris.Capture": {
+            case "io.mosip.t5mock.sbi.iris.rCapture":
+            case "io.mosip.t5mock.sbi.iris.Capture": {
                 new Thread(() -> {
                     cleanUriFileData();
                     byte[] input = getIntent().getByteArrayExtra("input");
@@ -452,7 +452,7 @@ public class MDServiceActivity extends AppCompatActivity {
                 os.write(ob.writeValueAsBytes(captureResponse));
                 os.flush();
                 os.close();
-                Uri respUri = FileProvider.getUriForFile(MDServiceActivity.this, "io.mosip.mock.sbi.fileprovider", file);
+                Uri respUri = FileProvider.getUriForFile(MDServiceActivity.this, "io.mosip.t5mock.sbi.fileprovider", file);
                 getApplicationContext().grantUriPermission(getCallingPackage(), respUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 intent.putExtra("response", respUri);
             } catch (final Exception e) {

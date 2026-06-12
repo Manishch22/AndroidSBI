@@ -41,15 +41,15 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="io.sbi.device" />
-                <action android:name="io.mosip.mock.sbi.face.Info" />
-                <action android:name="io.mosip.mock.sbi.face.Capture" />
-                <action android:name="io.mosip.mock.sbi.face.rCapture" />
-                <action android:name="io.mosip.mock.sbi.finger.Info" />
-                <action android:name="io.mosip.mock.sbi.finger.Capture" />
-                <action android:name="io.mosip.mock.sbi.finger.rCapture" />
-                <action android:name="io.mosip.mock.sbi.iris.Info" />
-                <action android:name="io.mosip.mock.sbi.iris.Capture" />
-                <action android:name="io.mosip.mock.sbi.iris.rCapture" />
+                <action android:name="io.mosip.t5mock.sbi.face.Info" />
+                <action android:name="io.mosip.t5mock.sbi.face.Capture" />
+                <action android:name="io.mosip.t5mock.sbi.face.rCapture" />
+                <action android:name="io.mosip.t5mock.sbi.finger.Info" />
+                <action android:name="io.mosip.t5mock.sbi.finger.Capture" />
+                <action android:name="io.mosip.t5mock.sbi.finger.rCapture" />
+                <action android:name="io.mosip.t5mock.sbi.iris.Info" />
+                <action android:name="io.mosip.t5mock.sbi.iris.Capture" />
+                <action android:name="io.mosip.t5mock.sbi.iris.rCapture" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -57,7 +57,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="io.mosip.mock.sbi.fileprovider"
+            android:authorities="io.mosip.t5mock.sbi.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true"
             android:readPermission="true">

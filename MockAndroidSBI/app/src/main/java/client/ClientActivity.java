@@ -174,7 +174,7 @@ public class ClientActivity extends AppCompatActivity {
                     fOut.flush();
                     fOut.close();
 
-                    Uri uri = FileProvider.getUriForFile(ClientActivity.this, "io.mosip.mock.sbi.fileprovider", txtFile);
+                    Uri uri = FileProvider.getUriForFile(ClientActivity.this, "io.mosip.t5mock.sbi.fileprovider", txtFile);
                     Intent share = new Intent(Intent.ACTION_SEND);
                     share.setType("plain/*");
                     share.putExtra(Intent.EXTRA_STREAM, uri);
@@ -222,11 +222,11 @@ public class ClientActivity extends AppCompatActivity {
             if (isIntentSafe) {
                 String packageName = null;
                 for (ResolveInfo activity : activities) {
-                    if (activity.activityInfo.applicationInfo.packageName.equals("io.mosip.mock.sbi")) {
+                    if (activity.activityInfo.applicationInfo.packageName.equals("io.mosip.t5mock.sbi")) {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         DeviceDiscoveryRequestDetail discoverRequestDto = new DeviceDiscoveryRequestDetail();
-                        discoverRequestDto.type = "Finger";
+                        discoverRequestDto.type = "Face";
 
                         intent.putExtra("input", new ObjectMapper().writeValueAsBytes(discoverRequestDto));
                         startActivityForResult(intent, REQUEST_DISCOVER);
@@ -291,8 +291,8 @@ public class ClientActivity extends AppCompatActivity {
                 captureRequestDto.domainUri = DeviceConstants.DOMAIN_URI;
                 captureRequestDto.transactionId = "1626630971975";
                 CaptureRequestDeviceDetailDto bio = new CaptureRequestDeviceDetailDto();
-                bio.type = "Finger";
-                bio.count = "4";
+                bio.type = "Face";
+                bio.count = "1";
                 bio.bioSubType = new String[]{"UNKNOWN"};
                 bio.requestedScore = 40;
                 bio.deviceId = serialNo;
