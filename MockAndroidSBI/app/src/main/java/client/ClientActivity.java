@@ -63,6 +63,7 @@ import io.mosip.mock.sbi.utility.DeviceConstants;
 
 public class ClientActivity extends AppCompatActivity {
 
+    private static final String MODALITY = "Finger";
     private static final int REQUEST_CODE_PERMISSION_INTERNET = 1001;
     private static final int REQUEST_DISCOVER = 1;
     private static final int REQUEST_INFO = 2;
@@ -226,7 +227,7 @@ public class ClientActivity extends AppCompatActivity {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         DeviceDiscoveryRequestDetail discoverRequestDto = new DeviceDiscoveryRequestDetail();
-                        discoverRequestDto.type = "Face";
+                        discoverRequestDto.type = MODALITY;
 
                         intent.putExtra("input", new ObjectMapper().writeValueAsBytes(discoverRequestDto));
                         startActivityForResult(intent, REQUEST_DISCOVER);
@@ -291,12 +292,12 @@ public class ClientActivity extends AppCompatActivity {
                 captureRequestDto.domainUri = DeviceConstants.DOMAIN_URI;
                 captureRequestDto.transactionId = "1626630971975";
                 CaptureRequestDeviceDetailDto bio = new CaptureRequestDeviceDetailDto();
-                bio.type = "Face";
-                bio.count = "1";
-                bio.bioSubType = new String[]{"UNKNOWN"};
+                bio.type = MODALITY;
+                bio.count = "4";
+                bio.bioSubType = new String[]{"Left IndexFinger", "Left MiddleFinger", "Left RingFinger", "Left LittleFinger"};
                 bio.requestedScore = 40;
                 bio.deviceId = serialNo;
-                bio.deviceSubId = requestCode == REQUEST_AUTH_CAPTURE ? "0" : "2";
+                bio.deviceSubId = "1";
                 bio.previousHash = "";
                 List<CaptureRequestDeviceDetailDto> mosipBioRequest = new ArrayList<>();
                 mosipBioRequest.add(bio);

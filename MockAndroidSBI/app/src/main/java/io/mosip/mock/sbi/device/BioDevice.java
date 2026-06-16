@@ -15,9 +15,17 @@ import static io.mosip.mock.sbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RI
 import static io.mosip.mock.sbi.utility.DeviceConstants.PROFILE_BIO_FILE_NAME_RIGHT_THUMB;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 
 import com.google.android.gms.common.util.IOUtils;
+
+import ai.tech5.finger.utils.Finger;
+
+import in.nprime.jp2.JP2Encoder;
+import npr.util.BioFace;
+import npr.util.BioFinger;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +35,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -59,6 +68,71 @@ public abstract class BioDevice {
         Map<String, Uri> uris = new HashMap<>();
         uris.put("", getBioAttributeURI(segmentUriMapping.get("")));
         return uris;
+    }
+
+    public Uri generateFaceIsoUri(byte[] capturedImage) {
+        Bitmap bmp = BitmapFactory.decodeByteArray(capturedImage, 0, capturedImage.length);
+        if (bmp == null) {
+            throw new RuntimeException("Unable to decode captured face image");
+        }
+        byte[] jp2bytes = new JP2Encoder(bmp).setCompressionRatio(35).encode();
+        byte[] isoBytes = BioFace.generateFaceISO2011(jp2bytes, bmp.getHeight(), bmp.getWidth(), "02");
+
+        Uri isoUri = Uri.fromFile(getTempFile(appContext));
+        saveByteArray(isoBytes, isoUri);
+        return isoUri;
+    }
+
+    public Map<String, Uri> generateFingerIsoUris(List<Finger> fingers) {
+        Map<String, Uri> uris = new HashMap<>();
+        if (fingers == null) {
+            return uris;
+        }
+        for (Finger finger : fingers) {
+            if (finger == null || finger.primaryImage == null || finger.primaryImage.length == 0) {
+                continue;
+            }
+            String segmentName = getFingerSegmentName(finger.pos);
+            if (segmentName == null) {
+                continue; // unknown / unmapped finger position
+            }
+            uris.put(segmentName, generateFingerIsoUri(finger));
+        }
+        return uris;
+    }
+
+    private Uri generateFingerIsoUri(Finger finger) {
+        Bitmap bmp = BitmapFactory.decodeByteArray(finger.primaryImage, 0, finger.primaryImage.length);
+        if (bmp == null) {
+            throw new RuntimeException("Unable to decode captured finger image");
+        }
+        byte[] jp2bytes = new JP2Encoder(bmp).setCompressionRatio(35).encode();
+        // position as a 2-digit hex string (ANSI position 1..10 -> "01".."0A");
+        // "04" is the ISO 19794-4 compression code for JPEG2000. Height/width order
+        // mirrors the working face path (generateFaceIsoUri).
+        String positionHex = String.format(Locale.ROOT, "%02X", finger.pos);
+        byte[] isoBytes = BioFinger.generateFingerprintISO2011(
+                jp2bytes, bmp.getHeight(), bmp.getWidth(), positionHex, "04");
+
+        Uri isoUri = Uri.fromFile(getTempFile(appContext));
+        saveByteArray(isoBytes, isoUri);
+        return isoUri;
+    }
+
+    private String getFingerSegmentName(int pos) {
+        switch (pos) {
+            case 1:  return DeviceConstants.BIO_NAME_RIGHT_THUMB;
+            case 2:  return DeviceConstants.BIO_NAME_RIGHT_INDEX;
+            case 3:  return DeviceConstants.BIO_NAME_RIGHT_MIDDLE;
+            case 4:  return DeviceConstants.BIO_NAME_RIGHT_RING;
+            case 5:  return DeviceConstants.BIO_NAME_RIGHT_LITTLE;
+            case 6:  return DeviceConstants.BIO_NAME_LEFT_THUMB;
+            case 7:  return DeviceConstants.BIO_NAME_LEFT_INDEX;
+            case 8:  return DeviceConstants.BIO_NAME_LEFT_MIDDLE;
+            case 9:  return DeviceConstants.BIO_NAME_LEFT_RING;
+            case 10: return DeviceConstants.BIO_NAME_LEFT_LITTLE;
+            default: return null;
+        }
     }
 
     public abstract Map<String, Uri> captureFingersModality(int deviceSubId, String[] bioSubType, String[] exception);

@@ -3,9 +3,8 @@ package io.mosip.mock.sbi.sdk;
 import ai.tech5.pheonix.capture.controller.*;
 import android.content.Context;
 import androidx.annotation.NonNull;
-import com.phoenixcapture.camerakit.FaceBox;
 
-public class T5FaceCapture implements FaceCaptureListener {
+public class T5FaceCapture {
     private AppSharedPreference sharedPreference = null;
     private int colorR = 125, colorG = 125, colorB = 125;
 
@@ -13,7 +12,7 @@ public class T5FaceCapture implements FaceCaptureListener {
         sharedPreference = new AppSharedPreference(context);
     }
 
-    public void startFaceCapture(Context context) {
+    public void startFaceCapture(Context context, FaceCaptureListener listener) {
         FaceCaptureController controller = FaceCaptureController.getInstance();
 
         //No need to call this if Tech5 license portal is used to get the  license. Only needed in case of  license portal url chanhged or license portal is hosted on customer premise
@@ -72,7 +71,7 @@ public class T5FaceCapture implements FaceCaptureListener {
 
         controller.setEnableCaptureAfter(sharedPreference.getEnableCaptureAfter());
 
-        controller.startFaceCapture("", context, this);
+        controller.startFaceCapture("", context, listener);
     }
 
     @NonNull
@@ -105,25 +104,5 @@ public class T5FaceCapture implements FaceCaptureListener {
 
         thresholds.setFaceWidthToImageWidthRatioTolerance(sharedPreference.getFaceWidthTolerance());
         return thresholds;
-    }
-
-    @Override
-    public void onFaceCaptured(byte[] bytes, byte[] bytes1, FaceBox faceBox) {
-        System.out.println("Face captured");
-    }
-
-    @Override
-    public void OnFaceCaptureFailed(String s) {
-
-    }
-
-    @Override
-    public void onCancelled() {
-
-    }
-
-    @Override
-    public void onTimedout(byte[] bytes) {
-
     }
 }

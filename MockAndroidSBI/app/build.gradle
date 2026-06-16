@@ -38,6 +38,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation files('libs/NprUtils.jar')
+    implementation files('libs/jp2library.aar')
     implementation 'com.drewnoakes:metadata-extractor:2.11.0'
     implementation 'org.apache.commons:commons-lang3:3.0'
     implementation files('libs/jackson/com.fasterxml.jackson.annotations.jar')

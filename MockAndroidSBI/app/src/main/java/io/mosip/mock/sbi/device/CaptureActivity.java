@@ -4,6 +4,7 @@ import static io.mosip.mock.sbi.utility.DeviceConstants.*;
 
 import ai.tech5.finger.utils.FingerCaptureResult;
 import ai.tech5.finger.utils.T5FingerCapturedListener;
+import ai.tech5.pheonix.capture.controller.FaceCaptureListener;
 import ai.tech5.sdk.abis.T5AirSnap.T5AirSnap;
 import android.Manifest;
 import android.app.Activity;
@@ -33,11 +34,13 @@ import io.mosip.mock.sbi.sdk.T5Capture;
 import io.mosip.mock.sbi.sdk.T5FaceCapture;
 import io.mosip.mock.sbi.utility.DeviceConstants;
 
+import com.phoenixcapture.camerakit.FaceBox;
+
 /**
  * @author NPrime Technologies
  */
 
-public class CaptureActivity extends AppCompatActivity implements T5FingerCapturedListener {
+public class CaptureActivity extends AppCompatActivity implements T5FingerCapturedListener, FaceCaptureListener {
     private static final int CAMERA_PERMISSION_CODE = 100;
     private static final String[] APP_PERMISSIONS = {Manifest.permission.CAMERA};
 
@@ -146,18 +149,13 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
 
                 switch (modality.toLowerCase()) {
                     case "face":
-//                        ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.face);
-//                        uris = bioDevice.captureFaceModality();
-//                        qualityScore = faceQualityScore;
-//                        captureSuccessful(uris, qualityScore);
                         T5FaceCapture faceCapture = new T5FaceCapture(this);
-                        faceCapture.startFaceCapture(this);
+                        faceCapture.startFaceCapture(this, this);
+                        // The flow will continue in the callback methods below
                         break;
                     case "finger":
-//                        ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.left);
-                        // Pass 'this' as the listener - callbacks will be received in onSuccess/onFailure
                         T5Capture capture = new T5Capture(this);
-                        capture.capture(this, this, null);
+                        capture.capture(this, this, null, deviceSubId);
                         // The flow will continue in the callback methods below
                         break;
                     case "iris":
@@ -180,9 +178,16 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
 
     @Override
     public void onSuccess(FingerCaptureResult result) {
-        // T5 SDK capture was successful, now get the fingerprint data
         try {
-            Map<String, Uri> uris = bioDevice.captureFingersModality(deviceSubId, bioSubType, exception);
+            if (result == null || result.fingers == null || result.fingers.isEmpty()) {
+                captureFailed(-301, "No finger data captured");
+                return;
+            }
+            Map<String, Uri> uris = bioDevice.generateFingerIsoUris(result.fingers);
+            if (uris.isEmpty()) {
+                captureFailed(-301, "No valid finger data captured");
+                return;
+            }
             captureSuccessful(uris, fingerQualityScore);
         } catch (Exception e) {
             captureFailed(-301, e.getMessage());
@@ -202,6 +207,32 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
     @Override
     public void onCancelled() {
         captureFailed(-301, "Capture cancelled by user");
+    }
+
+    @Override
+    public void onFaceCaptured(byte[] faceImage, byte[] fullFrameImage, FaceBox faceBox) {
+        try {
+            byte[] capturedData = (faceImage != null && faceImage.length > 0) ? faceImage : fullFrameImage;
+            if (capturedData == null || capturedData.length == 0) {
+                captureFailed(-301, "No face data captured");
+                return;
+            }
+            Map<String, Uri> uris = new HashMap<>();
+            uris.put("", bioDevice.generateFaceIsoUri(capturedData));
+            captureSuccessful(uris, faceQualityScore);
+        } catch (Exception e) {
+            captureFailed(-301, e.getMessage());
+        }
+    }
+
+    @Override
+    public void OnFaceCaptureFailed(String errorMessage) {
+        captureFailed(-301, errorMessage);
+    }
+
+    @Override
+    public void onTimedout(byte[] bytes) {
+        captureFailed(CaptureResult.CAPTURE_TIMEOUT, "Capture timeout");
     }
 
     public void captureSuccessful(Map<String, Uri> uris, int quality) {

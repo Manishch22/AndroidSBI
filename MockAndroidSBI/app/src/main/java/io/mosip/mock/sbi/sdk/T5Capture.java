@@ -6,6 +6,8 @@ import android.content.Context;
 import android.util.Log;
 import androidx.annotation.NonNull;
 
+import io.mosip.mock.sbi.utility.DeviceConstants;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ public class T5Capture {
         m_lightSensorHelper.start();
     }
 
-    public void capture(Context context, T5FingerCapturedListener listener, ArrayList<Integer> missingfingerId) {
+    public void capture(Context context, T5FingerCapturedListener listener, ArrayList<Integer> missingfingerId, int deviceSubId) {
         T5FingerCaptureController t5FingerCaptureController = T5FingerCaptureController.getInstance();
         settingsPrefManager = new SettingsPrefManager(context);
         t5FingerCaptureController.setsavesdklogs(true);
@@ -44,7 +46,18 @@ public class T5Capture {
         t5FingerCaptureController.setUsername("SBI");
         LinkedHashSet<SegmentationMode> segmentationModeSet = new LinkedHashSet<>();
 
-        segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
+        switch (deviceSubId) {
+            case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_THUMB: // both thumbs 3
+                segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_AND_RIGHT_THUMBS);
+                break;
+            case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_RIGHT: // right slap 2
+                segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_RIGHT_SLAP);
+                break;
+            case DeviceConstants.DEVICE_FINGER_SLAP_SUB_TYPE_ID_LEFT: // left slap 1
+            default:
+                segmentationModeSet.add(SegmentationMode.SEGMENTATION_MODE_LEFT_SLAP);
+                break;
+        }
 
         t5FingerCaptureController.setSegmentationModes(segmentationModeSet);
 

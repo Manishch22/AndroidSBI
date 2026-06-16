@@ -187,44 +187,48 @@ public class DeviceKeystore {
     }
 
     private String getCertificateFromIDA() {
-        try {
-            OkHttpClient client = new OkHttpClient();
-            String requestBody = String.format(AUTH_REQ_TEMPLATE,
-                    mosipAuthAppId,
-                    mosipAuthClientId,
-                    mosipAuthSecretKey,
-                    getTimestamp());
+//        try {
+//            OkHttpClient client = new OkHttpClient();
+//            String requestBody = String.format(AUTH_REQ_TEMPLATE,
+//                    mosipAuthAppId,
+//                    mosipAuthClientId,
+//                    mosipAuthSecretKey,
+//                    getTimestamp());
+//
+//            MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
+//            RequestBody body = RequestBody.create(mediaType, requestBody);
+//            Request request = new Request.Builder()
+//                    .url(mosipAuthServerUrl)
+//                    .post(body)
+//                    .build();
+//
+//            Response response = client.newCall(request).execute();
+//            if (response.isSuccessful()) {
+//                String authToken = response.header("authorization");
+//                Request idaRequest = new Request.Builder()
+//                        .header("cookie", "Authorization=" + authToken)
+//                        .url(mosipIdaServerUrl)
+//                        .get()
+//                        .build();
+//
+//                Response idaResponse = new OkHttpClient().newCall(idaRequest).execute();
+//                if (idaResponse.isSuccessful()) {
+//                    JSONObject jsonObject = new JSONObject(idaResponse.body().string());
+//                    jsonObject = jsonObject.getJSONObject("response");
+//                    return jsonObject.getString("certificate");
+//                }
+//            }
+//        } catch (Exception e) {
+//            Logger.e(DeviceConstants.LOG_TAG, "checkCertificateCredentials: " + e.getMessage());
+//        }
+//        return "";
 
-            MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
-            RequestBody body = RequestBody.create(mediaType, requestBody);
-            Request request = new Request.Builder()
-                    .url(mosipAuthServerUrl)
-                    .post(body)
-                    .build();
-
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                String authToken = response.header("authorization");
-                Request idaRequest = new Request.Builder()
-                        .header("cookie", "Authorization=" + authToken)
-                        .url(mosipIdaServerUrl)
-                        .get()
-                        .build();
-
-                Response idaResponse = new OkHttpClient().newCall(idaRequest).execute();
-                if (idaResponse.isSuccessful()) {
-                    JSONObject jsonObject = new JSONObject(idaResponse.body().string());
-                    jsonObject = jsonObject.getJSONObject("response");
-                    return jsonObject.getString("certificate");
-                }
-            }
-        } catch (Exception e) {
-            Logger.e(DeviceConstants.LOG_TAG, "checkCertificateCredentials: " + e.getMessage());
-        }
-        return "";
+        String certificate = "-----BEGIN CERTIFICATE-----\\nMIIDrDCCApSgAwIBAgIIu9HLpOIUyHIwDQYJKoZIhvcNAQELBQAwdjELMAkGA1UE\\nBhMCSU4xCzAJBgNVBAgMAktBMRIwEAYDVQQHDAlCQU5HQUxPUkUxDTALBgNVBAoM\\nBElJVEIxIDAeBgNVBAsMF01PU0lQLVRFQ0gtQ0VOVEVSIChJREEpMRUwEwYDVQQD\\nDAx3d3cubW9zaXAuaW8wHhcNMjYwMjA1MTg0MDQxWhcNMjgwMjA1MTg0MDQxWjB1\\nMQswCQYDVQQGEwJJTjELMAkGA1UECAwCS0ExEjAQBgNVBAcMCUJBTkdBTE9SRTEN\\nMAsGA1UECgwESUlUQjEgMB4GA1UECwwXTU9TSVAtVEVDSC1DRU5URVIgKElEQSkx\\nFDASBgNVBAMMC0lEQS1JREEtRklSMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB\\nCgKCAQEAkwgtsu37JXJuo08rlLiy/O7M6enfkf6dh+wIis2lH3ewmfeMUUMxQAAc\\nvJTxOqJ+A3f60tQC1JeAFY+rIESA1E+WfNiF00273nM0xvySyT++AFda7etYJEVa\\nPmW/6uIBarOSo6nCThPVsBIPlKcilwQB5sONbsIdhDf/wfet8J+TVnh+ZAiXoyU0\\n5DyIMBDf1ed7oml2FYAVvbElWsS29L7QhsNGMIb1T3+R8UjjKsqBj1WL2nLCM/CF\\nUttG4JGrS1KWSMqFNwxZxg4JZdyeI9A+ovKke2GsbpA5ZSVMfUPq6xgpa5b1rHm9\\njG+C48KPHMh0jzF60PKiePygK6++cwIDAQABoz8wPTAMBgNVHRMBAf8EAjAAMB0G\\nA1UdDgQWBBR33+K1I+kwChX/8P8EJUl89PgSPDAOBgNVHQ8BAf8EBAMCBSAwDQYJ\\nKoZIhvcNAQELBQADggEBAJ/68JveITrve8HVruKjlXnV/6YDe8DJPV0A012JyJzu\\nVdGCVHlQBQRFpgRb9q5qD4rO3ndWtaVDP4hl5fzsb7UFSVW0UYjBBXV9MfLxKVUr\\nLqVgbuO+sT6shccN2VwcDBivvyjRDVQWyeR9F3rMOHFPpaD2QSwyW7m36UXIVf5P\\nFQd5bC6v8H6WIPEFAYQb7Irr0h9Cy19HTaOfourW2gTmvZ67lw5gBqvteE5l51NL\\n++BO6YLO5dgGHp4FXMNrnnRbsAllCmO2U3Ac/YBVfeiX1zwcAmLisbr8Ume8+KJJ\\n0WduJCWqL4o0dgj64bHBJxE+ylHTjQRYW9Zs2Y+/H9M=\\n-----END CERTIFICATE-----\\n";
+        return certificate;
     }
 
     private static String trimBeginEnd(String pKey) {
+        pKey = pKey.replace("\\n", "\n");
         pKey = pKey.replaceAll("-*BEGIN([^-]*)-*(\r?\n)?", "");
         pKey = pKey.replaceAll("-*END([^-]*)-*(\r?\n)?", "");
         pKey = pKey.replaceAll("\\s", "");
