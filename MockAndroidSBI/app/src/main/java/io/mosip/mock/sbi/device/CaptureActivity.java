@@ -62,7 +62,7 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_rcapture);
+        setContentView(R.layout.activity_rcapture);
 
 //        m_cellSdk = new T5AirSnap(this);
 
@@ -107,12 +107,10 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
         }
 
         // Request camera permission if needed
-        if ("finger".equalsIgnoreCase(modality) || "face".equalsIgnoreCase(modality)) {
-            if (hasAllPermissionsGranted()) {
-                startCapture();
-            } else {
-                requestPermissionLauncher.launch(APP_PERMISSIONS);
-            }
+        if (hasAllPermissionsGranted()) {
+            startCapture();
+        } else {
+            requestPermissionLauncher.launch(APP_PERMISSIONS);
         }
     }
 
@@ -149,14 +147,22 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
 
                 switch (modality.toLowerCase()) {
                     case "face":
-                        T5FaceCapture faceCapture = new T5FaceCapture(this);
-                        faceCapture.startFaceCapture(this, this);
-                        // The flow will continue in the callback methods below
+                        ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.face);
+                        uris = bioDevice.captureFaceModality();
+                        qualityScore = faceQualityScore;
+                        captureSuccessful(uris, qualityScore);
+//                        T5FaceCapture faceCapture = new T5FaceCapture(this);
+//                        faceCapture.startFaceCapture(this, this);
+//                        // The flow will continue in the callback methods below
                         break;
                     case "finger":
-                        T5Capture capture = new T5Capture(this);
-                        capture.capture(this, this, null, deviceSubId);
-                        // The flow will continue in the callback methods below
+                        ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.left);
+                        uris = bioDevice.captureFingersModality(deviceSubId, bioSubType, exception);
+                        qualityScore = fingerQualityScore;
+                        captureSuccessful(uris, qualityScore);
+//                        T5Capture capture = new T5Capture(this);
+//                        capture.capture(this, this, null, deviceSubId);
+//                        // The flow will continue in the callback methods below
                         break;
                     case "iris":
                         ((ImageView) findViewById(R.id.img)).setImageResource(R.drawable.iris);

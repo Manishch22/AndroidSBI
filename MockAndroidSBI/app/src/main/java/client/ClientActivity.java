@@ -293,11 +293,11 @@ public class ClientActivity extends AppCompatActivity {
                 captureRequestDto.transactionId = "1626630971975";
                 CaptureRequestDeviceDetailDto bio = new CaptureRequestDeviceDetailDto();
                 bio.type = MODALITY;
-                bio.count = "4";
-                bio.bioSubType = new String[]{"Left IndexFinger", "Left MiddleFinger", "Left RingFinger", "Left LittleFinger"};
+                bio.count = "0";
+                bio.bioSubType = new String[]{"UNKNOWN"};
                 bio.requestedScore = 40;
                 bio.deviceId = serialNo;
-                bio.deviceSubId = "1";
+                bio.deviceSubId = "0";
                 bio.previousHash = "";
                 List<CaptureRequestDeviceDetailDto> mosipBioRequest = new ArrayList<>();
                 mosipBioRequest.add(bio);
