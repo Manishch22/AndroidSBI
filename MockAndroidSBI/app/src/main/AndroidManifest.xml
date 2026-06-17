@@ -20,9 +20,9 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher_camera"
+        android:icon="@drawable/app_icon"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_camera_round"
+        android:roundIcon="@drawable/app_icon"
         android:supportsRtl="true"
         android:theme="@style/MosipTheme">
         <activity
