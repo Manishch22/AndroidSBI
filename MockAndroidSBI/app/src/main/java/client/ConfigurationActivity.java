@@ -49,24 +49,24 @@ public class ConfigurationActivity extends AppCompatActivity {
     private static final String TAG = ConfigurationActivity.class.getName();
     private static final String LAST_UPDATE = "Last updated : ";
 
-    private Slider faceSlider;
-    private Slider fingerSlider;
-    private Slider irisSlider;
-    private TextView faceScoreTextView;
-    private TextView fingerScoreTextView;
-    private TextView irisScoreTextView;
-    private Spinner faceDeviceStatus;
-    private Spinner fingerDeviceStatus;
-    private Spinner irisDeviceStatus;
-    private EditText faceResponseDelayEditText;
-    private EditText fingerResponseDelayEditText;
-    private EditText irisResponseDelayEditText;
-    private Spinner deviceUsageSpinner;
-    private EditText mosipAuthAppIdEditText;
-    private EditText mosipAuthClientIdEditText;
-    private EditText mosipAuthSecretKeyEditText;
-    private EditText mosipAuthServerUrlEditText;
-    private EditText mosipIdaServerUrlEditText;
+//    private Slider faceSlider;
+//    private Slider fingerSlider;
+//    private Slider irisSlider;
+//    private TextView faceScoreTextView;
+//    private TextView fingerScoreTextView;
+//    private TextView irisScoreTextView;
+//    private Spinner faceDeviceStatus;
+//    private Spinner fingerDeviceStatus;
+//    private Spinner irisDeviceStatus;
+//    private EditText faceResponseDelayEditText;
+//    private EditText fingerResponseDelayEditText;
+//    private EditText irisResponseDelayEditText;
+//    private Spinner deviceUsageSpinner;
+//    private EditText mosipAuthAppIdEditText;
+//    private EditText mosipAuthClientIdEditText;
+//    private EditText mosipAuthSecretKeyEditText;
+//    private EditText mosipAuthServerUrlEditText;
+//    private EditText mosipIdaServerUrlEditText;
     private KeyCredentialFragment deviceKeyFragment;
     private KeyCredentialFragment ftmKeyFragment;
 
@@ -104,25 +104,25 @@ public class ConfigurationActivity extends AppCompatActivity {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         dateUtil = new DateUtil(this);
 
-        faceSlider = findViewById(R.id.slider_face_score);
-        fingerSlider = findViewById(R.id.slider_finger_score);
-        irisSlider = findViewById(R.id.slider_iris_score);
-        faceScoreTextView = findViewById(R.id.tx_face_score);
-        fingerScoreTextView = findViewById(R.id.tx_finger_score);
-        irisScoreTextView = findViewById(R.id.tx_iris_score);
-        faceDeviceStatus = findViewById(R.id.face_device_status);
-        fingerDeviceStatus = findViewById(R.id.finger_device_status);
-        irisDeviceStatus = findViewById(R.id.iris_device_status);
-        faceResponseDelayEditText = findViewById(R.id.face_response_delay_millis);
-        fingerResponseDelayEditText = findViewById(R.id.finger_response_delay_millis);
-        irisResponseDelayEditText = findViewById(R.id.iris_response_delay_millis);
-        deviceUsageSpinner = findViewById(R.id.deviceUsage);
-
-        mosipAuthAppIdEditText = findViewById(R.id.mosip_auth_app_id);
-        mosipAuthClientIdEditText = findViewById(R.id.mosip_auth_client_id);
-        mosipAuthSecretKeyEditText = findViewById(R.id.mosip_auth_secret_key);
-        mosipAuthServerUrlEditText = findViewById(R.id.mosip_auth_server_url);
-        mosipIdaServerUrlEditText = findViewById(R.id.mosip_ida_server_url);
+//        faceSlider = findViewById(R.id.slider_face_score);
+//        fingerSlider = findViewById(R.id.slider_finger_score);
+//        irisSlider = findViewById(R.id.slider_iris_score);
+//        faceScoreTextView = findViewById(R.id.tx_face_score);
+//        fingerScoreTextView = findViewById(R.id.tx_finger_score);
+//        irisScoreTextView = findViewById(R.id.tx_iris_score);
+//        faceDeviceStatus = findViewById(R.id.face_device_status);
+//        fingerDeviceStatus = findViewById(R.id.finger_device_status);
+//        irisDeviceStatus = findViewById(R.id.iris_device_status);
+//        faceResponseDelayEditText = findViewById(R.id.face_response_delay_millis);
+//        fingerResponseDelayEditText = findViewById(R.id.finger_response_delay_millis);
+//        irisResponseDelayEditText = findViewById(R.id.iris_response_delay_millis);
+//        deviceUsageSpinner = findViewById(R.id.deviceUsage);
+//
+//        mosipAuthAppIdEditText = findViewById(R.id.mosip_auth_app_id);
+//        mosipAuthClientIdEditText = findViewById(R.id.mosip_auth_client_id);
+//        mosipAuthSecretKeyEditText = findViewById(R.id.mosip_auth_secret_key);
+//        mosipAuthServerUrlEditText = findViewById(R.id.mosip_auth_server_url);
+//        mosipIdaServerUrlEditText = findViewById(R.id.mosip_ida_server_url);
 
         ArrayList<String> deviceStatus = new ArrayList<>();
         deviceStatus.add(DeviceConstants.ServiceStatus.READY.getStatus());
@@ -133,9 +133,9 @@ public class ConfigurationActivity extends AppCompatActivity {
         ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, deviceStatus);
         statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        faceDeviceStatus.setAdapter(statusAdapter);
-        fingerDeviceStatus.setAdapter(statusAdapter);
-        irisDeviceStatus.setAdapter(statusAdapter);
+//        faceDeviceStatus.setAdapter(statusAdapter);
+//        fingerDeviceStatus.setAdapter(statusAdapter);
+//        irisDeviceStatus.setAdapter(statusAdapter);
 
         ArrayList<String> deviceUsage = new ArrayList<>();
         deviceUsage.add(DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
@@ -144,7 +144,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         ArrayAdapter<String> deviceUsageAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, deviceUsage);
         deviceUsageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        deviceUsageSpinner.setAdapter(deviceUsageAdapter);
+//        deviceUsageSpinner.setAdapter(deviceUsageAdapter);
 
         //default values
         device_currentKeyAlias = sharedPreferences.getString(DEVICE_KEY_ALIAS, "");
@@ -162,7 +162,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         currentFaceResponseDelay = sharedPreferences.getInt(FACE_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
         currentFingerResponseDelay = sharedPreferences.getInt(FINGER_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
         currentIrisResponseDelay = sharedPreferences.getInt(IRIS_RESPONSE_DELAY, DEFAULT_TIME_DELAY);
-        currentDeviceUsage = sharedPreferences.getString(DEVICE_USAGE, DeviceConstants.DeviceUsage.Registration.getDeviceUsage());
+        currentDeviceUsage = sharedPreferences.getString(DEVICE_USAGE, DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
 
         mosipAuthAppId = sharedPreferences.getString(MOSIP_AUTH_APPID, DEFAULT_MOSIP_AUTH_APPID);
         mosipAuthClientId = sharedPreferences.getString(MOSIP_AUTH_CLIENTID, DEFAULT_MOSIP_AUTH_CLIENTID);
@@ -193,20 +193,20 @@ public class ConfigurationActivity extends AppCompatActivity {
             ftmKeyFragment.setArguments(bundle);
         }
 
-        faceSlider.addOnChangeListener((slider, value, fromUser) -> {
-            int intVal = (int) value;
-            faceScoreTextView.setText(String.valueOf(intVal));
-        });
-
-        fingerSlider.addOnChangeListener((slider, value, fromUser) -> {
-            int intVal = (int) value;
-            fingerScoreTextView.setText(String.valueOf(intVal));
-        });
-
-        irisSlider.addOnChangeListener((slider, value, fromUser) -> {
-            int intVal = (int) value;
-            irisScoreTextView.setText(String.valueOf(intVal));
-        });
+//        faceSlider.addOnChangeListener((slider, value, fromUser) -> {
+//            int intVal = (int) value;
+//            faceScoreTextView.setText(String.valueOf(intVal));
+//        });
+//
+//        fingerSlider.addOnChangeListener((slider, value, fromUser) -> {
+//            int intVal = (int) value;
+//            fingerScoreTextView.setText(String.valueOf(intVal));
+//        });
+//
+//        irisSlider.addOnChangeListener((slider, value, fromUser) -> {
+//            int intVal = (int) value;
+//            irisScoreTextView.setText(String.valueOf(intVal));
+//        });
 
         resetScreen();
     }
@@ -234,21 +234,21 @@ public class ConfigurationActivity extends AppCompatActivity {
         device_currentKeyPassword = deviceKeyFragment.getPassword();
         ftm_currentKeyAlias = ftmKeyFragment.getKeyAlias();
         ftm_currentKeyPassword = ftmKeyFragment.getPassword();
-        currentFaceScore = (int) faceSlider.getValue();
-        currentFingerScore = (int) fingerSlider.getValue();
-        currentIrisScore = (int) irisSlider.getValue();
-        currentFaceDeviceStatus = faceDeviceStatus.getSelectedItem().toString();
-        currentFingerDeviceStatus = fingerDeviceStatus.getSelectedItem().toString();
-        currentIrisDeviceStatus = irisDeviceStatus.getSelectedItem().toString();
-        currentFaceResponseDelay = Integer.parseInt(faceResponseDelayEditText.getText().toString());
-        currentFingerResponseDelay = Integer.parseInt(fingerResponseDelayEditText.getText().toString());
-        currentIrisResponseDelay = Integer.parseInt(irisResponseDelayEditText.getText().toString());
-        currentDeviceUsage = deviceUsageSpinner.getSelectedItem().toString();
-        mosipAuthAppId = mosipAuthAppIdEditText.getText().toString();
-        mosipAuthClientId = mosipAuthClientIdEditText.getText().toString();
-        mosipAuthSecretKey = mosipAuthSecretKeyEditText.getText().toString();
-        mosipAuthServerUrl = mosipAuthServerUrlEditText.getText().toString();
-        mosipIdaServerUrl = mosipIdaServerUrlEditText.getText().toString();
+//        currentFaceScore = (int) faceSlider.getValue();
+//        currentFingerScore = (int) fingerSlider.getValue();
+//        currentIrisScore = (int) irisSlider.getValue();
+//        currentFaceDeviceStatus = faceDeviceStatus.getSelectedItem().toString();
+//        currentFingerDeviceStatus = fingerDeviceStatus.getSelectedItem().toString();
+//        currentIrisDeviceStatus = irisDeviceStatus.getSelectedItem().toString();
+//        currentFaceResponseDelay = Integer.parseInt(faceResponseDelayEditText.getText().toString());
+//        currentFingerResponseDelay = Integer.parseInt(fingerResponseDelayEditText.getText().toString());
+//        currentIrisResponseDelay = Integer.parseInt(irisResponseDelayEditText.getText().toString());
+//        currentDeviceUsage = deviceUsageSpinner.getSelectedItem().toString();
+//        mosipAuthAppId = mosipAuthAppIdEditText.getText().toString();
+//        mosipAuthClientId = mosipAuthClientIdEditText.getText().toString();
+//        mosipAuthSecretKey = mosipAuthSecretKeyEditText.getText().toString();
+//        mosipAuthServerUrl = mosipAuthServerUrlEditText.getText().toString();
+//        mosipIdaServerUrl = mosipIdaServerUrlEditText.getText().toString();
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(DEVICE_KEY_ALIAS, device_currentKeyAlias);
@@ -288,21 +288,21 @@ public class ConfigurationActivity extends AppCompatActivity {
     private void resetScreen() {
         deviceKeyFragment.setValues(device_currentKeyAlias, device_currentKeyPassword, device_lastUploadDate);
         ftmKeyFragment.setValues(ftm_currentKeyAlias, ftm_currentKeyPassword, ftm_lastUploadDate);
-        faceSlider.setValue(currentFaceScore);
-        fingerSlider.setValue(currentFingerScore);
-        irisSlider.setValue(currentIrisScore);
-        setSpinner(faceDeviceStatus, currentFaceDeviceStatus);
-        setSpinner(fingerDeviceStatus, currentFingerDeviceStatus);
-        setSpinner(irisDeviceStatus, currentIrisDeviceStatus);
-        setSpinner(deviceUsageSpinner, currentDeviceUsage);
-        faceResponseDelayEditText.setText(String.format("%d", currentFaceResponseDelay));
-        fingerResponseDelayEditText.setText(String.format("%d", currentFingerResponseDelay));
-        irisResponseDelayEditText.setText(String.format("%d", currentIrisResponseDelay));
-        mosipAuthAppIdEditText.setText(mosipAuthAppId);
-        mosipAuthClientIdEditText.setText(mosipAuthClientId);
-        mosipAuthSecretKeyEditText.setText(mosipAuthSecretKey);
-        mosipAuthServerUrlEditText.setText(mosipAuthServerUrl);
-        mosipIdaServerUrlEditText.setText(mosipIdaServerUrl);
+//        faceSlider.setValue(currentFaceScore);
+//        fingerSlider.setValue(currentFingerScore);
+//        irisSlider.setValue(currentIrisScore);
+//        setSpinner(faceDeviceStatus, currentFaceDeviceStatus);
+//        setSpinner(fingerDeviceStatus, currentFingerDeviceStatus);
+//        setSpinner(irisDeviceStatus, currentIrisDeviceStatus);
+//        setSpinner(deviceUsageSpinner, currentDeviceUsage);
+//        faceResponseDelayEditText.setText(String.format("%d", currentFaceResponseDelay));
+//        fingerResponseDelayEditText.setText(String.format("%d", currentFingerResponseDelay));
+//        irisResponseDelayEditText.setText(String.format("%d", currentIrisResponseDelay));
+//        mosipAuthAppIdEditText.setText(mosipAuthAppId);
+//        mosipAuthClientIdEditText.setText(mosipAuthClientId);
+//        mosipAuthSecretKeyEditText.setText(mosipAuthSecretKey);
+//        mosipAuthServerUrlEditText.setText(mosipAuthServerUrl);
+//        mosipIdaServerUrlEditText.setText(mosipIdaServerUrl);
     }
 
     private boolean saveFile(Uri fileUri, String fileName) {

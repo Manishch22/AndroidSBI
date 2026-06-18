@@ -78,7 +78,7 @@ public class CaptureActivity extends AppCompatActivity implements T5FingerCaptur
         irisQualityScore = sharedPreferences.getInt(ClientConstants.IRIS_SCORE, 30);
 
         String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
-                , DeviceConstants.DeviceUsage.Registration.getDeviceUsage());
+                , DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
         if (DeviceUsage.Authentication.getDeviceUsage().equals(deviceUsage)) {
             bioDevice = new AuthBioDevice(this);
         } else {
