@@ -15,7 +15,10 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.Spinner;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -82,12 +85,15 @@ public class ClientActivity extends AppCompatActivity {
     MaterialTextView textBox, manufacturer, modelId, deviceId, deviceStatus, textBoxLabel;
     TextView devicePurposeTextView;
     ImageButton btnShareResponse;
-    TableRow deviceIdRow;
+    Spinner deviceTypeSpinner;
+    TableRow deviceIdRow, deviceTypeRow;
     ConstraintLayout emptyScreen, responseScreen, progressBarScreen;
 
     static String appID = null;
     String serialNo = null;
     private String responseData = null;
+    private String selectedDeviceType = MODALITY;
+    private final List<DiscoverDto> discoveredDevices = new ArrayList<>();
     SharedPreferences sharedPreferences;
 
     @Override
@@ -100,13 +106,13 @@ public class ClientActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
 
-        devicePurposeTextView = findViewById(R.id.deviceUsageTextView);
+        devicePurposeTextView = null;
         btnInfo = findViewById(R.id.info);
-        btnRCapture = findViewById(R.id.rcapture);
+        btnRCapture = null;
         btnDiscover = findViewById(R.id.discover);
         btnCapture = findViewById(R.id.capture);
-        btnDeviceKeyExport = findViewById(R.id.deviceKeyExportBtn);
-        btnFTMKeyExport = findViewById(R.id.ftmKeyExportBtn);
+        btnDeviceKeyExport = null;
+        btnFTMKeyExport = null;
         textBoxLabel = findViewById(R.id.response_label);
         textBox = findViewById(R.id.textbox);
         manufacturer = findViewById(R.id.manufacturer);
@@ -114,12 +120,36 @@ public class ClientActivity extends AppCompatActivity {
         deviceId = findViewById(R.id.device_id);
         deviceStatus = findViewById(R.id.device_status);
         deviceIdRow = findViewById(R.id.device_id_row);
+        deviceTypeRow = findViewById(R.id.device_type_row);
+        deviceTypeSpinner = findViewById(R.id.device_type_spinner);
         emptyScreen = findViewById(R.id.empty_layout);
         responseScreen = findViewById(R.id.response_layout);
         progressBarScreen = findViewById(R.id.client_progress_layout);
         btnShareResponse = findViewById(R.id.share_response);
 
         textBox.setMovementMethod(new ScrollingMovementMethod());
+        btnInfo.setEnabled(false);
+        btnCapture.setEnabled(false);
+        deviceTypeSpinner.setEnabled(false);
+
+        deviceTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position >= 0 && position < discoveredDevices.size()) {
+                    try {
+                        updateSelectedDevice(discoveredDevices.get(position));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(ClientActivity.this, "Digital ID error", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                appID = null;
+            }
+        });
 
         initViews();
         btnInfo.setOnClickListener(view -> {
@@ -131,10 +161,12 @@ public class ClientActivity extends AppCompatActivity {
             }
         });
 
-        btnRCapture.setOnClickListener(view -> {
-            textBox.setText("");
-            capture(".rCapture", REQUEST_REG_CAPTURE);
-        });
+        if (btnRCapture != null) {
+            btnRCapture.setOnClickListener(view -> {
+                textBox.setText("");
+                capture(".rCapture", REQUEST_REG_CAPTURE);
+            });
+        }
 
 
         btnDiscover.setOnClickListener(view -> {
@@ -147,19 +179,23 @@ public class ClientActivity extends AppCompatActivity {
             capture(".Capture", REQUEST_AUTH_CAPTURE);
         });
 
-        btnDeviceKeyExport.setOnClickListener(view -> {
-            textBox.setText("");
-            String keyAlias = sharedPreferences.getString(ClientConstants.DEVICE_KEY_ALIAS, "");
-            String keystorePwd = sharedPreferences.getString(ClientConstants.DEVICE_KEY_STORE_PASSWORD, "");
-            exportCertificate(ClientConstants.DEVICE_P12_FILE_NAME, keyAlias, keystorePwd);
-        });
+        if (btnDeviceKeyExport != null) {
+            btnDeviceKeyExport.setOnClickListener(view -> {
+                textBox.setText("");
+                String keyAlias = sharedPreferences.getString(ClientConstants.DEVICE_KEY_ALIAS, "");
+                String keystorePwd = sharedPreferences.getString(ClientConstants.DEVICE_KEY_STORE_PASSWORD, "");
+                exportCertificate(ClientConstants.DEVICE_P12_FILE_NAME, keyAlias, keystorePwd);
+            });
+        }
 
-        btnFTMKeyExport.setOnClickListener(view -> {
-            textBox.setText("");
-            String keyAlias = sharedPreferences.getString(ClientConstants.FTM_KEY_ALIAS, "");
-            String keystorePwd = sharedPreferences.getString(ClientConstants.FTM_KEY_STORE_PASSWORD, "");
-            exportCertificate(ClientConstants.FTM_P12_FILE_NAME, keyAlias, keystorePwd);
-        });
+        if (btnFTMKeyExport != null) {
+            btnFTMKeyExport.setOnClickListener(view -> {
+                textBox.setText("");
+                String keyAlias = sharedPreferences.getString(ClientConstants.FTM_KEY_ALIAS, "");
+                String keystorePwd = sharedPreferences.getString(ClientConstants.FTM_KEY_STORE_PASSWORD, "");
+                exportCertificate(ClientConstants.FTM_P12_FILE_NAME, keyAlias, keystorePwd);
+            });
+        }
 
         btnShareResponse.setOnClickListener(view -> {
             try {
@@ -187,21 +223,27 @@ public class ClientActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         });
-        discover();
     }
 
     private void initViews() {
         String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
-                , DeviceConstants.DeviceUsage.Registration.getDeviceUsage());
+                , DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
 
         if (DeviceConstants.DeviceUsage.Registration.getDeviceUsage().equalsIgnoreCase(deviceUsage)) {
-            devicePurposeTextView.setText(getResources().getString(R.string.device_purpose_registration));
-            btnRCapture.setEnabled(true);
-            btnCapture.setEnabled(false);
+            if (devicePurposeTextView != null) {
+                devicePurposeTextView.setText(getResources().getString(R.string.device_purpose_registration));
+            }
+            if (btnRCapture != null) {
+                btnRCapture.setEnabled(appID != null);
+            }
         } else {
-            devicePurposeTextView.setText(getResources().getString(R.string.device_purpose_auth));
-            btnCapture.setEnabled(true);
-            btnRCapture.setEnabled(false);
+            if (devicePurposeTextView != null) {
+                devicePurposeTextView.setText(getResources().getString(R.string.device_purpose_auth));
+            }
+            btnCapture.setEnabled(appID != null);
+            if (btnRCapture != null) {
+                btnRCapture.setEnabled(false);
+            }
         }
     }
 
@@ -213,6 +255,7 @@ public class ClientActivity extends AppCompatActivity {
 
     private void discover() {
         try {
+            resetDiscoveredDeviceControls();
             Intent intent = new Intent();
             intent.setAction("io.sbi.device");
 
@@ -227,7 +270,7 @@ public class ClientActivity extends AppCompatActivity {
                         packageName = activity.activityInfo.applicationInfo.packageName;
                         intent.setComponent(new ComponentName(packageName, activity.activityInfo.name));
                         DeviceDiscoveryRequestDetail discoverRequestDto = new DeviceDiscoveryRequestDetail();
-                        discoverRequestDto.type = MODALITY;
+                        discoverRequestDto.type = "Biometric Device";
 
                         intent.putExtra("input", new ObjectMapper().writeValueAsBytes(discoverRequestDto));
                         startActivityForResult(intent, REQUEST_DISCOVER);
@@ -292,12 +335,12 @@ public class ClientActivity extends AppCompatActivity {
                 captureRequestDto.domainUri = DeviceConstants.DOMAIN_URI;
                 captureRequestDto.transactionId = "1626630971975";
                 CaptureRequestDeviceDetailDto bio = new CaptureRequestDeviceDetailDto();
-                bio.type = MODALITY;
-                bio.count = "4";
-                bio.bioSubType = new String[]{"Left IndexFinger", "Left MiddleFinger", "Left RingFinger", "Left LittleFinger"};
+                bio.type = selectedDeviceType;
+                bio.count = "0";
+                bio.bioSubType = new String[]{"UNKNOWN"};
                 bio.requestedScore = 40;
                 bio.deviceId = serialNo;
-                bio.deviceSubId = "1";
+                bio.deviceSubId = "0";
                 bio.previousHash = "";
                 List<CaptureRequestDeviceDetailDto> mosipBioRequest = new ArrayList<>();
                 mosipBioRequest.add(bio);
@@ -351,6 +394,82 @@ public class ClientActivity extends AppCompatActivity {
         //responseData = null;
     }
 
+    private void updateDiscoveredDevices(List<DiscoverDto> devices, ObjectMapper objectMapper) throws Exception {
+        discoveredDevices.clear();
+        discoveredDevices.addAll(devices);
+
+        List<String> deviceTypes = new ArrayList<>();
+        for (DiscoverDto device : devices) {
+            deviceTypes.add(getDeviceType(device));
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, deviceTypes);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        deviceTypeSpinner.setAdapter(adapter);
+        deviceTypeSpinner.setEnabled(true);
+        deviceTypeRow.setVisibility(View.VISIBLE);
+        btnInfo.setEnabled(true);
+        btnCapture.setEnabled(true);
+
+        updateSelectedDevice(devices.get(0));
+        showResponse("Discover response :", objectMapper.writeValueAsString(devices));
+    }
+
+    private void resetDiscoveredDeviceControls() {
+        appID = null;
+        serialNo = null;
+        discoveredDevices.clear();
+        deviceTypeSpinner.setAdapter(null);
+        deviceTypeSpinner.setEnabled(false);
+        deviceTypeRow.setVisibility(View.GONE);
+        btnInfo.setEnabled(false);
+        btnCapture.setEnabled(false);
+        if (btnRCapture != null) {
+            btnRCapture.setEnabled(false);
+        }
+    }
+
+    private void updateSelectedDevice(DiscoverDto device) throws Exception {
+        JSONObject digitalIDObj = getDigitalIdObject(device);
+        if (digitalIDObj.has("make")) {
+            manufacturer.setText(digitalIDObj.getString("make"));
+        }
+        if (digitalIDObj.has("model")) {
+            modelId.setText(digitalIDObj.getString("model"));
+        }
+        if (device.deviceStatus != null) {
+            deviceStatus.setText(device.deviceStatus);
+        }
+        String strDeviceId = digitalIDObj.optString("serialNo", "");
+        if (!strDeviceId.isEmpty()) {
+            deviceIdRow.setVisibility(View.VISIBLE);
+            deviceId.setText(strDeviceId);
+        } else {
+            deviceId.setText("");
+            deviceIdRow.setVisibility(View.GONE);
+        }
+        appID = device.callbackId;
+        selectedDeviceType = digitalIDObj.optString("type", MODALITY);
+    }
+
+    private String getDeviceType(DiscoverDto device) throws Exception {
+        String deviceType = getDigitalIdObject(device).optString("type", "");
+        if (!deviceType.isEmpty()) {
+            return deviceType;
+        }
+        return device.callbackId == null ? "" : device.callbackId;
+    }
+
+    private JSONObject getDigitalIdObject(DiscoverDto device) throws Exception {
+        String encodedDigitalID = device.digitalId;
+        if (encodedDigitalID == null || encodedDigitalID.isEmpty()) {
+            throw new Exception("Digital ID error");
+        }
+        byte[] digitalIdBytes = Base64.getUrlDecoder().decode(encodedDigitalID);
+        return new JSONObject(new String(digitalIdBytes));
+    }
+
     public void sendMessage(int what, Object obj) {
         Message message = new Message();
         message.what = what;
@@ -402,31 +521,7 @@ public class ClientActivity extends AppCompatActivity {
                                     });
 
                             if (!list.isEmpty()) {
-                                String encodedDigitalID = list.get(0).digitalId;
-                                if (!encodedDigitalID.isEmpty()) {
-                                    byte[] digitalIdBytes = Base64.getUrlDecoder().decode(encodedDigitalID);
-                                    JSONObject digitalIDObj = new JSONObject(new String(digitalIdBytes));
-                                    if (digitalIDObj.has("make")) {
-                                        manufacturer.setText(digitalIDObj.getString("make"));
-                                    }
-                                    if (digitalIDObj.has("model")) {
-                                        modelId.setText(digitalIDObj.getString("model"));
-                                    }
-                                    if (list.get(0).deviceStatus != null) {
-                                        deviceStatus.setText(list.get(0).deviceStatus);
-                                    }
-                                    String strDeviceId = digitalIDObj.getString("serialNo");
-                                    if (!strDeviceId.isEmpty()) {
-                                        deviceIdRow.setVisibility(View.VISIBLE);
-                                        deviceId.setText(strDeviceId);
-                                    } else {
-                                        deviceIdRow.setVisibility(View.GONE);
-                                    }
-                                    appID = list.get(0).callbackId;
-                                    showResponse("Discover response :", ob.writeValueAsString(list.get(0)));
-                                } else {
-                                    Toast.makeText(ClientActivity.this, "Digital ID error", Toast.LENGTH_SHORT).show();
-                                }
+                                updateDiscoveredDevices(list, ob);
                             } else {
                                 Toast.makeText(ClientActivity.this, "Discover failed - No Devices", Toast.LENGTH_SHORT).show();
                             }

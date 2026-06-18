@@ -102,7 +102,7 @@ public class MDServiceActivity extends AppCompatActivity {
                         , DeviceConstants.ServiceStatus.READY.getStatus()));
 
         String deviceUsage = sharedPreferences.getString(ClientConstants.DEVICE_USAGE
-                , DeviceConstants.DeviceUsage.Registration.getDeviceUsage());
+                , DeviceConstants.DeviceUsage.Authentication.getDeviceUsage());
 
         deviceUtil = new DeviceUtil(deviceUsage);
         responseGenHelper = new ResponseGenHelper(deviceUtil);
@@ -149,6 +149,14 @@ public class MDServiceActivity extends AppCompatActivity {
                                         DeviceConstants.BioType.Iris);
                                 break;
                             case "Biometric Device":
+                                List<DiscoverDto> deviceList = new ArrayList<>();
+                                List<DiscoverDto> faceDevice = discoverDevice(currentFaceStatus, szTs, "io.mosip.t5mock.sbi.face", DeviceConstants.BioType.Face);
+                                List<DiscoverDto> fingerDevice = discoverDevice(currentFingerStatus, szTs, "io.mosip.t5mock.sbi.finger", DeviceConstants.BioType.Finger);
+//                                List<DiscoverDto> irisDevice = discoverDevice(currentIrisStatus, szTs, "io.mosip.t5mock.sbi.iris", DeviceConstants.BioType.Iris);
+                                deviceList.addAll(faceDevice);
+                                deviceList.addAll(fingerDevice);
+//                                deviceList.addAll(irisDevice);
+                                responseBody = deviceList;
                                 break;
                             default:
                                 responseBody = Arrays.asList(new DeviceInfoResponse(null, new Error("501", "Invalid Type Value in Device Discovery Request")));
