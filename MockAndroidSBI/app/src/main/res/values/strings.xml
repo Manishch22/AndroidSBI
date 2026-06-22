@@ -13,6 +13,7 @@
     <string name="last_upload">Last Upload</string>
     <string name="browse">Browse</string>
     <string name="p12_config">P12 Config</string>
+    <string name="ida_fir_certificate_config">IDA_FIR Certificate Config</string>
     <string name="modality_config">Modality Config</string>
     <string name="_30">30</string>
     <string name="face">Face</string>

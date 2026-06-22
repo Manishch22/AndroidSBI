@@ -92,6 +92,31 @@
                 android:layout_height="wrap_content"
                 tools:layout="@layout/fragment_key_credential" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/ida_fir_certificate_config"
+                android:textColor="@color/mosip_primary"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/custom_border"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/idaFirCertificateFragment"
+                    android:name="client.FileChooserFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:layout="@layout/fragment_file_chooser" />
+            </LinearLayout>
+
 <!--            <LinearLayout-->
 <!--                android:layout_width="match_parent"-->
 <!--                android:layout_height="wrap_content"-->

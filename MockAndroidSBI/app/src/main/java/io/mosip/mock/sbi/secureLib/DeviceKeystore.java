@@ -176,14 +176,40 @@ public class DeviceKeystore {
                 new ByteArrayInputStream(Base64.getDecoder().decode(certificateStr)));
     }
 
+    public boolean loadCertificateFromFile(String fileName) {
+        File file = new File(context.getFilesDir(), fileName);
+
+        try {
+            return storeCertificateBytes(Files.readAllBytes(file.toPath()));
+        } catch (Exception e) {
+            Logger.e(DeviceConstants.LOG_TAG, "loadCertificateFromFile: " + e.getMessage());
+            return false;
+        }
+    }
+
     public void loadCertificateFromIDA(Runnable onLoadCompleted) {
         new Thread(() -> {
-            String certificateStr = getCertificateFromIDA();
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(CERTIFICATE_TO_ENCRYPT_BIO, certificateStr);
-            editor.apply();
+            File uploadedCertificateFile = new File(context.getFilesDir(), ClientConstants.IDA_FIR_CERTIFICATE_FILE_NAME);
+            if (uploadedCertificateFile.exists()) {
+                loadCertificateFromFile(ClientConstants.IDA_FIR_CERTIFICATE_FILE_NAME);
+            }
+
+//            String certificateStr = getCertificateFromIDA();
+//            SharedPreferences.Editor editor = sharedPreferences.edit();
+//            editor.putString(CERTIFICATE_TO_ENCRYPT_BIO, certificateStr);
+//            editor.apply();
             onLoadCompleted.run();
         }).start();
+    }
+
+    private boolean storeCertificateBytes(byte[] certificateBytes) throws CertificateException, CertificateEncodingException {
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        Certificate certificate = cf.generateCertificate(new ByteArrayInputStream(certificateBytes));
+        String certificateStr = Base64.getEncoder().encodeToString(certificate.getEncoded());
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(CERTIFICATE_TO_ENCRYPT_BIO, certificateStr);
+        editor.apply();
+        return true;
     }
 
     private String getCertificateFromIDA() {

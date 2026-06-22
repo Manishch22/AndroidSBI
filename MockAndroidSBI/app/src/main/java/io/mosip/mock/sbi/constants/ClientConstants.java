@@ -11,8 +11,10 @@ public class ClientConstants {
     public static final String FINGER_SCORE = "finger_score";
     public static final String DEVICE_LAST_UPLOAD_DATE = "device_last_upload_date";
     public static final String FTM_LAST_UPLOAD_DATE = "ftm_last_upload_date";
+    public static final String IDA_FIR_CERTIFICATE_LAST_UPLOAD_DATE = "ida_fir_certificate_last_upload_date";
     public static final String DEVICE_P12_FILE_NAME = "device_p12_file.p12";
     public static final String FTM_P12_FILE_NAME = "ftm_p12_file.p12";
+    public static final String IDA_FIR_CERTIFICATE_FILE_NAME = "ida_fir_certificate.crt";
     public static final String FACE_DEVICE_STATUS = "face_device_status";
     public static final String FINGER_DEVICE_STATUS = "finger_device_status";
     public static final String IRIS_DEVICE_STATUS = "iris_device_status";
