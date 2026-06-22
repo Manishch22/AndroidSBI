@@ -69,6 +69,7 @@ public class ConfigurationActivity extends AppCompatActivity {
 //    private EditText mosipIdaServerUrlEditText;
     private KeyCredentialFragment deviceKeyFragment;
     private KeyCredentialFragment ftmKeyFragment;
+    private FileChooserFragment idaFirCertificateFragment;
 
     private String device_currentKeyAlias;
     private String device_currentKeyPassword;
@@ -79,6 +80,7 @@ public class ConfigurationActivity extends AppCompatActivity {
     private int currentIrisScore;
     private String device_lastUploadDate;
     private String ftm_lastUploadDate;
+    private String idaFirCertificateLastUploadDate;
     private String currentFaceDeviceStatus;
     private String currentFingerDeviceStatus;
     private String currentIrisDeviceStatus;
@@ -156,6 +158,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         currentIrisScore = sharedPreferences.getInt(IRIS_SCORE, 30);
         device_lastUploadDate = sharedPreferences.getString(DEVICE_LAST_UPLOAD_DATE, "");
         ftm_lastUploadDate = sharedPreferences.getString(FTM_LAST_UPLOAD_DATE, "");
+        idaFirCertificateLastUploadDate = sharedPreferences.getString(IDA_FIR_CERTIFICATE_LAST_UPLOAD_DATE, "");
         currentFaceDeviceStatus = sharedPreferences.getString(FACE_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getStatus());
         currentFingerDeviceStatus = sharedPreferences.getString(FINGER_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getStatus());
         currentIrisDeviceStatus = sharedPreferences.getString(IRIS_DEVICE_STATUS, DeviceConstants.ServiceStatus.READY.getStatus());
@@ -193,6 +196,14 @@ public class ConfigurationActivity extends AppCompatActivity {
             ftmKeyFragment.setArguments(bundle);
         }
 
+        idaFirCertificateFragment = (FileChooserFragment) fragmentManager.findFragmentById(R.id.idaFirCertificateFragment);
+
+        if (idaFirCertificateFragment != null) {
+            Bundle bundle = new Bundle();
+            bundle.putString(ARG_LAST_UPLOAD_DATE, idaFirCertificateLastUploadDate);
+            idaFirCertificateFragment.setArguments(bundle);
+        }
+
 //        faceSlider.addOnChangeListener((slider, value, fromUser) -> {
 //            int intVal = (int) value;
 //            faceScoreTextView.setText(String.valueOf(intVal));
@@ -215,6 +226,7 @@ public class ConfigurationActivity extends AppCompatActivity {
 //        Uri device_fileUri = device_fileChooserFragment.getSelectedUri();
         Uri device_fileUri = deviceKeyFragment.getSelectedUri();
         Uri ftm_fileUri = ftmKeyFragment.getSelectedUri();
+        Uri idaFirCertificateUri = idaFirCertificateFragment != null ? idaFirCertificateFragment.getSelectedUri() : null;
 
         if (device_fileUri != null && !saveFile(device_fileUri, ClientConstants.DEVICE_P12_FILE_NAME)) {
             Toast.makeText(this, "Failed to save reg p.12 file! Please try again.", Toast.LENGTH_LONG).show();
@@ -228,6 +240,21 @@ public class ConfigurationActivity extends AppCompatActivity {
             return;
         } else {
             ftm_lastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
+        }
+
+        if (idaFirCertificateUri != null) {
+            if (!saveFile(idaFirCertificateUri, ClientConstants.IDA_FIR_CERTIFICATE_FILE_NAME)) {
+                Toast.makeText(this, "Failed to save IDA_FIR certificate! Please try again.", Toast.LENGTH_LONG).show();
+                return;
+            }
+            DeviceKeystore keystore = new DeviceKeystore(this);
+            if (!keystore.loadCertificateFromFile(ClientConstants.IDA_FIR_CERTIFICATE_FILE_NAME)) {
+                Toast.makeText(this, "Invalid IDA_FIR certificate. Please upload a valid .crt file.", Toast.LENGTH_LONG).show();
+                return;
+            }
+            idaFirCertificateLastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
+        } else{
+            idaFirCertificateLastUploadDate = dateUtil.getDateTime(System.currentTimeMillis());
         }
 
         device_currentKeyAlias = deviceKeyFragment.getKeyAlias();
@@ -260,6 +287,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putInt(IRIS_SCORE, currentIrisScore);
         editor.putString(DEVICE_LAST_UPLOAD_DATE, LAST_UPDATE + device_lastUploadDate);
         editor.putString(FTM_LAST_UPLOAD_DATE, LAST_UPDATE + ftm_lastUploadDate);
+        editor.putString(IDA_FIR_CERTIFICATE_LAST_UPLOAD_DATE, LAST_UPDATE + idaFirCertificateLastUploadDate);
         editor.putString(FACE_DEVICE_STATUS, currentFaceDeviceStatus);
         editor.putString(FINGER_DEVICE_STATUS, currentFingerDeviceStatus);
         editor.putString(IRIS_DEVICE_STATUS, currentIrisDeviceStatus);
@@ -288,6 +316,8 @@ public class ConfigurationActivity extends AppCompatActivity {
     private void resetScreen() {
         deviceKeyFragment.setValues(device_currentKeyAlias, device_currentKeyPassword, device_lastUploadDate);
         ftmKeyFragment.setValues(ftm_currentKeyAlias, ftm_currentKeyPassword, ftm_lastUploadDate);
+        if (idaFirCertificateFragment != null)
+            idaFirCertificateFragment.resetSelection(idaFirCertificateLastUploadDate);
 //        faceSlider.setValue(currentFaceScore);
 //        fingerSlider.setValue(currentFingerScore);
 //        irisSlider.setValue(currentIrisScore);
